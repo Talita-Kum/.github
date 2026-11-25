@@ -15,6 +15,11 @@
   <img src="https://img.shields.io/badge/Compliance-Ley%2021.719%20%7C%2020.584-2E7D32?style=for-the-badge" alt="Compliance" />
   <img src="https://img.shields.io/badge/Security-CIS%20Benchmark%20v1.6.0-B71C1C?style=for-the-badge" alt="Security" />
 </p>
+<p align="center">
+  <img src="https://img.shields.io/badge/OWASP-LLM%20Top%2010%202025-0288D1?style=for-the-badge&logo=owasp&logoColor=white" alt="OWASP LLM 2025" />
+  <img src="https://img.shields.io/badge/OWASP-API%20Security%202023-00796B?style=for-the-badge&logo=owasp&logoColor=white" alt="OWASP API 2023" />
+  <img src="https://img.shields.io/badge/OWASP-Top%2010%20Web%202021-E65100?style=for-the-badge&logo=owasp&logoColor=white" alt="OWASP Web 2021" />
+</p>
 
 ---
 
@@ -190,15 +195,54 @@ docker compose exec ollama-service ollama pull llama3.2:3b
 
 ---
 
-## 5. Matriz de Cumplimiento Normativo y Hardening
+## 5. Marco de Seguridad y Cumplimiento Normativo (OWASP & Leyes Chilenas)
+
+### 5.1 OWASP Top 10 for LLM Applications (2025)
+
+| Riesgo OWASP LLM 2025 | Mecanismo de Control Implementado en Talita Kum |
+| :--- | :--- |
+| **LLM01: Prompt Injection** | Confinamiento XML estricto (`<patient_clinical_narrative>`), stripping perimetral de delimitadores reservados del sistema y purga de caracteres de control Unicode (Zero-Width y BiDi). |
+| **LLM02: Sensitive Information Disclosure** | Pasarela perimetral de seudonimización reversible de RUTs, nombres de pacientes y profesionales, correos y telefonía móvil y fija chilena; compuerta activa `verificar_fuga_pii`. |
+| **LLM05: Improper Output Handling** | Guardrail regex post-inferencia que neutraliza comandos SQL (`SELECT`, `INSERT`, `UPDATE`, `DELETE`, `DROP`, `UNION`), código markdown y llamadas a shell en los campos de Kimün. |
+| **LLM06: Excessive Agency** | Arquitectura de estructuración sintáctica pura sin herramientas autónomas, sin acceso a APIs del sistema operativo y sin privilegios de mutación directa en bases de datos. |
+| **LLM07: System Prompt Leakage** | Plantilla clínica interna inmutable en formato JSON cerrado, bloqueando comandos de extracción de prompt del sistema mediante sanitización perimetral de entrada. |
+| **LLM08: Vector and Embedding Weaknesses** | Aislamiento criptográfico del contexto RAG (`<trusted_rag_context origin="system_rag_knowledge_base">`) y filtrado con umbral de relevancia semántica (score >= 0.40) para descartar ruido inyectado. |
+| **LLM10: Unbounded Consumption** | Acotamiento estricto de generación de tokens (`num_predict: 350`) en Ollama, esquemas Pydantic resilientes contra DoS y fallback no sintético ante indisponibilidad del motor. |
+
+---
+
+### 5.2 OWASP API Security Top 10 (2023)
+
+| Riesgo OWASP API 2023 | Mecanismo de Control Implementado en Talita Kum |
+| :--- | :--- |
+| **API1:2023 Broken Object Level Authorization (BOLA)** | Validación de alcance organizacional y profesional en cada consulta por identificador único de intervención (`services/scope.py`). |
+| **API2:2023 Broken Authentication** | Validación de credenciales de pasarela mediante `hmac.compare_digest` para evaluación en tiempo constante, mitigando ataques de canal lateral (*Timing Attacks* / CWE-208). |
+| **API3:2023 Broken Object Property Level Authorization** | Esquemas de entrada Pydantic cerrados (`InterventionContextInput`, `ValidateInputFields`) con tipado estricto, impidiendo asignación masiva de campos no autorizados (*Mass Assignment*). |
+| **API4:2023 Unrestricted Resource Consumption** | Límite estricto de 50 MB en audios, cuotas de memoria en contenedores Docker y control de tasa mediante `SlidingWindowLimiter`. |
+| **API5:2023 Broken Function Level Authorization (BFLA)** | Control de acceso basado en capacidades (`Capability.INTERVENTION_CREATE`, `INTERVENTION_VALIDATE`, `INTERVENTION_COPY_VALIDATED`). |
+| **API8:2023 Security Misconfiguration** | Cabeceras HTTP de blindaje (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'`), supresión del header `Server` y contenedores rootless. |
+
+---
+
+### 5.3 OWASP Top 10 Web Application Security (2021)
+
+| Riesgo OWASP Web 2021 | Mecanismo de Control Implementado en Talita Kum |
+| :--- | :--- |
+| **A01:2021 Broken Access Control** | Guardias de ruta en frontend (`ProtectedRoute`, `RequireCapability`, `SessionGate`) y temporizador de inactividad médica de 15 minutos con purga de memoria volátil. |
+| **A02:2021 Cryptographic Failures** | Cifrado de sobre AES-256-GCM para relatos clínicos en reposo, canal TLS 1.3 en tránsito y destrucción física en memoria RAM (`/tmp/audio_ram` en modo `r+b` con `os.fsync`). |
+| **A03:2021 Injection** | Consultas parametrizadas exclusivas mediante SQLAlchemy 2.0 asíncrono sobre PostgreSQL (cero concatenación SQL dinámico); sanitización de entrada de texto clínico. |
+| **A05:2021 Security Misconfiguration** | Aislamiento de red privada interna `talitakum-net` con cero puertos de IA expuestos al host; política CORS con lista blanca explícita (`CORS_ORIGINS`). |
+| **A09:2021 Security Logging and Monitoring Failures** | Pistas de auditoría inmutables en tabla `audit_events` con registro de usuario, acción, timestamp, IP y entidad afectada. |
+
+---
+
+### 5.4 Normativas de Salud y Privacidad (Leyes Chilenas y CIS Docker)
 
 | Dominio | Norma / Estándar | Mecanismo de Control Aplicado |
 | :--- | :--- | :--- |
 | **Datos Biométricos de Voz** | Ley N° 21.719 (Chile) | Aislamiento exclusivo en `tmpfs` en RAM (`/tmp/audio_ram`). Sobrescritura física de ceros (`0x00`) y bytes criptográficos (`os.urandom`) en modo `r+b` antes del borrado. Cero persistencia en disco duro. |
 | **Ficha Clínica y Privacidad** | Ley N° 20.584 y 19.628 | Pasarela de seudonimización perimetral reversible de RUTs, nombres y números telefónicos móviles y fijos chilenos previo a cualquier interacción con el modelo LLM. |
 | **Contenedores Docker** | CIS Docker Benchmark v1.6.0 | Ejecución no-root (`USER 10001:10001`), sistemas de archivos en solo lectura (`read_only: true`), `cap_drop: ALL` y `no-new-privileges: true`. |
-| **Inferencia LLM** | OWASP Top 10 for LLM 2025 | Encapsulamiento XML de contexto RAG (`<trusted_rag_context>`), prompt pasivo anti-inyección, neutralización de comandos SQL en tiempo real y fallback no sintético. |
-| **Seguridad de APIs** | OWASP API Security / CWE-208 | Validación de tokens de pasarela en tiempo constante (`hmac.compare_digest`), mitigando ataques de canal lateral (*Timing Attacks*). |
 | **Concurrencia de Servidor** | Estándar de Disponibilidad API | Delegación asíncrona de inferencia y llamadas I/O de red vía `asyncio.to_thread` en endpoints FastAPI para garantizar capacidad de respuesta concurrente. |
 
 ---
