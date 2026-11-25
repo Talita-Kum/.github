@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Docker%20Compose-v2-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Compose" />
-  <img src="https://img.shields.io/badge/Python-3.12%20%7C%203.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
   <img src="https://img.shields.io/badge/FastAPI-0.162.0-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
   <img src="https://img.shields.io/badge/TypeScript-5.7.2-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
@@ -113,7 +113,7 @@ Subsistema privado de procesamiento fonético y modelos de lenguaje natural clí
 
 | Característica | Especificación |
 | :--- | :--- |
-| **Tecnologías** | Python 3.11-slim, FastAPI 0.115.0, Uvicorn 0.32.0, Nginx 1.27 (TLS 1.3) |
+| **Tecnologías** | Python 3.12-slim, FastAPI 0.115.0, Uvicorn 0.34.0, Nginx 1.27 (TLS 1.3) |
 | **Transcripción** | Faster-Whisper 1.0.3 sobre CTranslate2 (`large-v3-turbo` o `small`) |
 | **Modelos LLM** | Ollama local (`llama3.1:8b-instruct-q4_K_M` o `llama3.2:3b` para CPU) |
 | **RAG Semántico** | ChromaDB, PyPDF 5.1.0, Python-Docx 1.1.2 |
