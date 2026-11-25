@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Talita-Kum/.github/main/profile/logo.png" alt="Fundación Talita Kum" width="280" />
+</p>
+
 # Talita Kum — Ecosistema Clínico Asistido por Inteligencia Artificial
 
 <p align="center">
